@@ -19,6 +19,12 @@ A discrete event simulation system that models customer queuing in a bank enviro
 
 ## 🚀 Getting Started
 
+> **⚡ Quick Start**: Pre-compiled binaries are already included in the `bin/` directory! 
+> 
+> **If you just want to run the simulation**, skip directly to the [📖 Usage](#-usage) section.
+> 
+> **If you want to build from source** or modify the code, continue with the prerequisites below.
+
 ### Prerequisites
 
 #### Linux (Ubuntu/Debian)
@@ -140,9 +146,13 @@ cl /Fe:qSim.exe src/*.c /Iinclude
 
 ### Installation
 
-After building, the executable will be located in the `bin/` directory:
-- **Linux/WSL**: `bin/qSim`
-- **Windows**: `bin/qSim.exe`
+> **📦 Pre-built Binaries Available**: The executables are already compiled and ready to use!
+
+The executable is located in the `bin/` directory:
+- **Linux/WSL**: `bin/qSim` ✅ *Ready to run*
+- **Windows**: `bin/qSim.exe` ✅ *Ready to run*
+
+*Note: After building from source, new executables will replace these pre-built versions.*
 
 ## 📖 Usage
 
