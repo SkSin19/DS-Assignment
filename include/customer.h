@@ -1,14 +1,13 @@
 #ifndef CUSTOMER_H
 #define CUSTOMER_H
 
-typedef struct Customer {
+typedef struct {
     int id;
-    double arrival;
-    double startService;
-    double completion;
-    struct Customer *next;
+    float arrival_time;
+    float service_time;
+    float completion_time;
 } Customer;
 
-void initCustomer(Customer *c, int id, double arrival);
+void initCustomer(Customer *cust, int id, float arrival_time, float base_service_time);
 
 #endif

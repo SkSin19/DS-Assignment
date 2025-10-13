@@ -1,19 +1,16 @@
 #ifndef TELLER_H
 #define TELLER_H
-
 #include "customer.h"
 
-typedef struct Teller {
+typedef struct {
     int id;
-    double totalServiceTime;
-    struct Customer *queueHead;
-    struct Customer *queueTail;
-    int queueLen;
+    int busy;
+    float service_time;
+    float idle_time;
 } Teller;
 
-void initTeller(Teller *t, int id);
-void teller_enqueue(Teller *t, Customer *c);
-Customer* teller_dequeue(Teller *t);
-int teller_queue_length(Teller *t);
+void initTeller(Teller *teller, int id);
+void serveCustomer(Teller *teller, Customer *cust, float base_service_time);
+void addIdleTime(Teller *teller);
 
 #endif

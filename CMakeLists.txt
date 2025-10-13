@@ -12,7 +12,7 @@ set(SOURCES
         src/sim.c
         src/customer.c
         src/teller.c
-        src/event.c
+
 )
 
 # Set output directory

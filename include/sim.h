@@ -3,8 +3,7 @@
 
 #include "customer.h"
 #include "teller.h"
-#include "event.h"
 
-void run_simulation(int numCustomers, int numTellers, double simTime, double avgService, int mode);
+void simulate(int num_customers, int num_tellers, float total_time, float base_service_time, int singleQueue);
 
 #endif

@@ -1,56 +1,74 @@
-#include "sim.h"
 #include <stdio.h>
 #include <stdlib.h>
 #include <math.h>
+#include "sim.h"
 
-void run_simulation(int numCustomers, int numTellers, double simTime, double avgService, int mode) {
-    Customer customers[numCustomers];
-    Teller tellers[numTellers];
-    resetEventQueue();
+void simulate(int num_customers, int num_tellers, float total_time, float base_service_time, int singleQueue) {
+    Customer customers[num_customers];
+    Teller tellers[num_tellers];
 
-    // init customers and tellers
-    for (int i = 0; i < numCustomers; i++) initCustomer(&customers[i], i+1, rand()/(double)RAND_MAX*simTime);
-    for (int i = 0; i < numTellers; i++) initTeller(&tellers[i], i+1);
+    // 🔸 Initialize tellers
+    for (int i = 0; i < num_tellers; i++)
+        initTeller(&tellers[i], i);
 
-    // schedule all arrivals
-    for (int i = 0; i < numCustomers; i++) {
-        Event *arr = createEvent(EVT_ARRIVAL, &customers[i], NULL, customers[i].arrival);
-        insertEvent(arr);
+    float current_time = 0.0;
+
+    // 🔸 Generate random arrival times
+    for (int i = 0; i < num_customers; i++) {
+        if (i == 0)
+            current_time = rand() % 3;  // first customer arrives 0–2 minutes in
+        else
+            current_time += rand() % 3 + 1; // next arrival 1–3 minutes later
+
+        initCustomer(&customers[i], i, current_time, base_service_time);
     }
 
-    // process events
-    while (!isEventQueueEmpty()) {
-        Event *e = event_pop();
-        if (e->type == EVT_ARRIVAL) handleArrival(e, tellers, numTellers, avgService, mode);
-        else handleDeparture(e, tellers, numTellers, avgService, mode);
-        event_free(e);
+    float total_service = 0, total_idle = 0;
+    float total_time_in_bank = 0, max_wait = 0;
+    float wait_times[num_customers];
+
+    for (int i = 0; i < num_customers; i++) {
+        Teller *teller = &tellers[i % num_tellers];
+
+        // 🔸 Add random idle if teller is free before arrival
+        if (teller->service_time < customers[i].arrival_time)
+            addIdleTime(teller);
+
+        float start_time = fmax(customers[i].arrival_time, teller->service_time);
+        float completion = start_time + customers[i].service_time;
+        customers[i].completion_time = completion;
+
+        // 🔸 Update teller state
+        teller->service_time = completion;
+
+        // 🔸 Calculate waiting time using your professor's formula
+        float wait = (completion - customers[i].arrival_time) - customers[i].service_time;
+        if (wait < 0) wait = 0;
+
+        wait_times[i] = wait;
+        total_time_in_bank += (completion - customers[i].arrival_time);
+        if (wait > max_wait) max_wait = wait;
     }
 
-    // compute stats
-    double totalTime = 0.0, totalTime2 = 0.0, maxWait = 0.0;
-    for (int i = 0; i < numCustomers; i++) {
-        double wait = customers[i].completion - customers[i].arrival;
-        totalTime += wait;
-        totalTime2 += wait*wait;
-        if (wait > maxWait) maxWait = wait;
-    }
-    double avgTime = totalTime/numCustomers;
-    double stdDev = sqrt(totalTime2/numCustomers - avgTime*avgTime);
-
-    double totalService = 0.0, totalIdle = 0.0;
-    for (int i = 0; i < numTellers; i++) {
-        totalService += tellers[i].totalServiceTime;
-        double idle = simTime - tellers[i].totalServiceTime;
-        if (idle < 0) idle = 0.0;
-        totalIdle += idle;
+    // 🔸 Compute totals
+    for (int i = 0; i < num_tellers; i++) {
+        total_service += tellers[i].service_time;
+        total_idle += tellers[i].idle_time;
     }
 
-    printf("=== Simulation with %d tellers, %s ===\n", numTellers, mode==0?"SINGLE common queue":"SEPARATE queues");
-    printf("Total customers served: %d\n", numCustomers);
-    printf("Total simulation time: %.2f minutes\n", simTime);
-    printf("Average time in bank: %.2f minutes\n", avgTime);
-    printf("Std deviation of time in bank: %.2f\n", stdDev);
-    printf("Max wait time: %.2f minutes\n", maxWait);
-    printf("Total teller service time: %.2f minutes\n", totalService);
-    printf("Total teller idle time: %.2f minutes\n\n", totalIdle);
+    // 🔸 Compute averages
+    float avg_time_in_bank = total_time_in_bank / num_customers;
+    float sum_dev = 0;
+    for (int i = 0; i < num_customers; i++)
+        sum_dev += pow((wait_times[i] - avg_time_in_bank), 2);
+    float std_dev = sqrt(sum_dev / num_customers);
+
+    // 🔸 Print result
+    printf("Total customers served: %d\n", num_customers);
+    printf("Total simulation time: %.2f minutes\n", total_time);
+    printf("Average time in bank: %.2f minutes\n", avg_time_in_bank);
+    printf("Std deviation of time in bank: %.2f\n", std_dev);
+    printf("Max wait time: %.2f minutes\n", max_wait);
+    printf("Total teller service time: %.2f minutes\n", total_service);
+    printf("Total teller idle time: %.2f minutes\n", total_idle);
 }
